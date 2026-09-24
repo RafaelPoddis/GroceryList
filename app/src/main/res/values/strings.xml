@@ -3,4 +3,6 @@
     <string name="title">My grocery list</string>
     <string name="homeBtn">Home</string>
     <string name="marketsBtn">Markets</string>
+    <string name="defaultListName">Nome da lista</string>
+    <string name="defaultItemQntd">0</string>
 </resources>
