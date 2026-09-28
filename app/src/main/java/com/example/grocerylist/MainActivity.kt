@@ -8,6 +8,7 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
@@ -27,6 +28,9 @@ class MainActivity : AppCompatActivity(), LocationListener {
     private lateinit var locationManager : LocationManager
     private lateinit var crud: ViewLists
     private lateinit var listsView: LinearLayout
+    private lateinit var marketsView: LinearLayout
+    private lateinit var listsDisplay: ScrollView
+    private lateinit var marketsDisplay: ScrollView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +46,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
         crud = ViewLists(this)
         listsView = findViewById<LinearLayout>(R.id.listsView)
+        marketsView = findViewById<LinearLayout>(R.id.marketsView)
 
         if (crud.read().isEmpty()) {
             val emptyText = TextView(this)
@@ -51,10 +56,29 @@ class MainActivity : AppCompatActivity(), LocationListener {
             listsView.addView(emptyText)
         }
 
-        val homeBtn: Button = findViewById<Button>(R.id.homeBtn)
-        val marketsBtn: Button = findViewById<Button>(R.id.marketsBtn)
+        val homeBtn: Button = findViewById(R.id.homeBtn)
+        val marketsBtn: Button = findViewById(R.id.marketsBtn)
+        listsDisplay = findViewById(R.id.displayLists)
+        marketsDisplay = findViewById(R.id.displayMarkets)
 
-        val marketsView: LinearLayout = findViewById<LinearLayout>(R.id.marketsView)
+        homeBtn.setOnClickListener {
+            showListsScreen()
+        }
+
+        marketsBtn.setOnClickListener {
+            showMarketsScreen()
+        }
+
+    }
+
+    private fun showListsScreen() {
+        listsDisplay.visibility = View.VISIBLE
+        marketsDisplay.visibility = View.GONE
+    }
+
+    private fun showMarketsScreen() {
+        listsDisplay.visibility = View.GONE
+        marketsDisplay.visibility = View.VISIBLE
     }
 
     override fun onLocationChanged(location: Location) {
