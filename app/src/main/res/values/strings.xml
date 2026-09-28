@@ -4,7 +4,9 @@
     <string name="homeBtn">Home</string>
     <string name="marketsBtn">Markets</string>
     <string name="defaultListName">Nome da lista</string>
+    <string name="defaultMarketName">Nome do mercado</string>
     <string name="defaultItemQntd">0</string>
+    <string name="defaultMarketDistance">0 Km</string>
     <string name="editBtnDescription">Edit Button</string>
     <string name="deleteBtnDescription">Delete Button</string>
 </resources>

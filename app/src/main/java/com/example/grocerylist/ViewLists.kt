@@ -92,7 +92,7 @@ class ViewLists(private val context: Context) {
                 for (j in 0 until itemsArray.length()) {
                     val itemObj = itemsArray.getJSONObject(j)
                     val itemId = itemObj.getInt("id")
-                    val itemNome = itemObj.getString("nome")
+                    val itemNome = itemObj.getString("name")
                     val itemAmount = itemObj.getInt("amount")
                     items.add(Item(id = itemId, name = itemNome, amount = itemAmount))
                 }

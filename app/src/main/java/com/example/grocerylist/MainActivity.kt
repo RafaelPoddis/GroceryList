@@ -45,15 +45,47 @@ class MainActivity : AppCompatActivity(), LocationListener {
         )
 
         crud = ViewLists(this)
-        listsView = findViewById<LinearLayout>(R.id.listsView)
-        marketsView = findViewById<LinearLayout>(R.id.marketsView)
+        listsView = findViewById(R.id.listsView)
+        marketsView = findViewById(R.id.marketsView)
+
+        val items = mutableListOf(
+            Item(id = 1, name = "Arroz", amount = 2),
+            Item(id = 2, name = "Feijão", amount = 3)
+        )
 
         if (crud.read().isEmpty()) {
             val emptyText = TextView(this)
 
+//            crud.create("Mercado", items)
             emptyText.text = "Você não possui nenhuma lista"
             emptyText.textSize = 24f
             listsView.addView(emptyText)
+        } else {
+            for (lista in crud.read()){
+                val itemView = layoutInflater.inflate(
+                    R.layout.activity_listasview,
+                    listsView,
+                    false
+                )
+
+                val nomeText = itemView.findViewById<TextView>(R.id.listaNome)
+                nomeText.text = lista.name
+
+                listsView.addView(itemView)
+            }
+        }
+
+        for (mercado in mercados) {
+            val mercadoView = layoutInflater.inflate(
+                R.layout.activity_mercadosview,
+                marketsView,
+                false
+            )
+
+            val nomeText = mercadoView.findViewById<TextView>(R.id.mercadoNome)
+            nomeText.text = mercado.nome
+
+            marketsView.addView(mercadoView)
         }
 
         val homeBtn: Button = findViewById(R.id.homeBtn)
@@ -68,6 +100,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
         marketsBtn.setOnClickListener {
             showMarketsScreen()
         }
+
 
     }
 
