@@ -4,17 +4,20 @@ package com.example.grocerylist
 //import android.hardware.SensorEvent
 //import android.hardware.SensorEventListener
 //import android.hardware.SensorManager
+import android.content.Intent
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import org.w3c.dom.Text
 import java.io.File
 
 data class Mercado(
@@ -53,10 +56,10 @@ class MainActivity : AppCompatActivity(), LocationListener {
             Item(id = 2, name = "Feijão", amount = 3)
         )
 
+        crud.create("Mercado", items)
         if (crud.read().isEmpty()) {
             val emptyText = TextView(this)
 
-//            crud.create("Mercado", items)
             emptyText.text = "Você não possui nenhuma lista"
             emptyText.textSize = 24f
             listsView.addView(emptyText)
@@ -71,9 +74,28 @@ class MainActivity : AppCompatActivity(), LocationListener {
                 val nomeText = itemView.findViewById<TextView>(R.id.listaNome)
                 nomeText.text = lista.name
 
+                val amountText = itemView.findViewById<TextView>(R.id.qntdItem)
+                amountText.text = lista.items.size.toString()
+
+                val editBtn = itemView.findViewById<ImageButton>(R.id.editBtn)
+
+                editBtn.setOnClickListener {
+                    val intent = Intent(this, NewListActivity::class.java)
+                    intent.putExtra("listaId", lista.id)
+                    startActivity(intent)
+                }
+
+                val deleteBtn = itemView.findViewById<ImageButton>(R.id.deleteBtn)
+
+                deleteBtn.setOnClickListener {
+                    crud.delete(lista.id)
+                    listsView.removeView(itemView)
+                }
+
                 listsView.addView(itemView)
             }
         }
+
 
         for (mercado in mercados) {
             val mercadoView = layoutInflater.inflate(

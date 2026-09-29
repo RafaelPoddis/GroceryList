@@ -26,10 +26,11 @@ class ViewLists(private val context: Context) {
         return listas
     }
 
-    fun update(id: Int, newName: String) {
+    fun update(id: Int, newName: String, newItems: MutableList<Item> = mutableListOf()) {
         val lista = listas.find { it.id == id }
         if (lista != null) {
             lista.name = newName
+            lista.items = newItems
             saveToFile()
         }
     }
