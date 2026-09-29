@@ -40,16 +40,11 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-<!--        <LinearLayout-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:orientation="vertical">-->
-
-<!--        </LinearLayout>-->
         <ImageButton
             android:id="@+id/editBtn"
             android:layout_width="48dp"
             android:layout_height="48dp"
+            android:background="none"
             android:contentDescription="@string/editBtnDescription"
             android:src="@drawable/ic_edit" />
 
@@ -57,6 +52,7 @@
             android:id="@+id/deleteBtn"
             android:layout_width="48dp"
             android:layout_height="48dp"
+            android:background="none"
             android:layout_marginHorizontal="10dp"
             android:contentDescription="@string/deleteBtnDescription"
             android:src="@drawable/ic_delete" />

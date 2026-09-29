@@ -9,4 +9,6 @@
     <string name="defaultMarketDistance">0 Km</string>
     <string name="editBtnDescription">Edit Button</string>
     <string name="deleteBtnDescription">Delete Button</string>
+    <string name="addList">+ Add List</string>
+    <string name="backBtnDescription">Voltar</string>
 </resources>
