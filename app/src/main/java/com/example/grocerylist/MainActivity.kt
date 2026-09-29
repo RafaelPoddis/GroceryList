@@ -56,7 +56,12 @@ class MainActivity : AppCompatActivity(), LocationListener {
             Item(id = 2, name = "Feijão", amount = 3)
         )
 
-        crud.create("Mercado", items)
+        val addListBtn = findViewById<Button>(R.id.addListBtn)
+
+        addListBtn.setOnClickListener {
+            startActivity(Intent(this, NewListActivity::class.java))
+        }
+
         if (crud.read().isEmpty()) {
             val emptyText = TextView(this)
 

@@ -16,7 +16,8 @@ class ViewLists(private val context: Context) {
     }
 
     fun create(name: String, items: MutableList<Item> = mutableListOf()) {
-        val lista = Lista(id = nextId, name = name, items = items)
+        val nomeFinal = name.trim().ifEmpty { "Lista $nextId" }
+        val lista = Lista(id = nextId, name = nomeFinal, items = items)
         listas.add(lista)
         nextId++
         saveToFile()
