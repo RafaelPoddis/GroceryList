@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -24,6 +25,7 @@ class Crud(private val context: Context) {
         .getInstance()
         .getReference("listas")
 
+    private lateinit var itemView: View
 //    init {
 //        carregarListas()
 //    }
@@ -83,13 +85,14 @@ class Crud(private val context: Context) {
                     "${index} - ${item.lista.name}"
                 }
 
+                listsView.removeAllViews()
                 val texto = TextView(context)
                 if (linhas.isEmpty()){
                     texto.text = "Você não possui nenhuma lista!"
                     listsView.addView(texto)
                 } else {
                     for (item in listas){
-                        val itemView = LayoutInflater.from(context).inflate(
+                        itemView = LayoutInflater.from(context).inflate(
                             R.layout.activity_listasview,
                             listsView,
                             false
