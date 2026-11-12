@@ -10,5 +10,7 @@
     <string name="editBtnDescription">Edit Button</string>
     <string name="deleteBtnDescription">Delete Button</string>
     <string name="addList">+ Add List</string>
+    <string name="addItem">+ Add Item</string>
     <string name="backBtnDescription">Voltar</string>
+    <string name="saveBtnDescription">Save List</string>
 </resources>

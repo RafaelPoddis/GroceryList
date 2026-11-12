@@ -14,26 +14,36 @@ import androidx.appcompat.app.AppCompatActivity
 
 class NewListActivity: AppCompatActivity() {
 
-    private lateinit var crud: ViewLists
+    private lateinit var crud: Crud
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContentView(R.layout.activity_newlist)
 
+        crud = Crud(this)
         val backBtn = findViewById<ImageButton>(R.id.backBtn)
-        crud = ViewLists(this)
-        val listaId = intent.getIntExtra("listaId", -1)
-
         backBtn.setOnClickListener {
-            val listaNome = findViewById<EditText>(R.id.nameField).text.toString()
-
-            if(listaId == -1){
-                crud.update(listaId, listaNome)
-            } else {
-                crud.create(listaNome)
-            }
             finish()
         }
+        val id = intent.getStringExtra("id") ?: ""
+
+        if (!id.isEmpty()){
+
+        }
+
+        val saveBtn = findViewById<ImageButton>(R.id.saveBtn)
+        val campoNome = findViewById<EditText>(R.id.nameField)
+
+        saveBtn.setOnClickListener {
+            if (id.isEmpty()){
+                val nome = campoNome.text.toString().trim()
+                if (nome.isEmpty()){
+                    campoNome.error = "Coloque um nome na lista!"
+                } else {
+                    crud.create(Lista(nome))
+                }
+            }
+        }
+
     }
 }
