@@ -26,9 +26,6 @@ class Crud(private val context: Context) {
         .getReference("listas")
 
     private lateinit var itemView: View
-//    init {
-//        carregarListas()
-//    }
 
     // Cria a lista no firebase
     fun create(lista: Lista) {

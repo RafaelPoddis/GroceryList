@@ -42,11 +42,6 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
         setContentView(R.layout.activity_main)
 
-        val items = mutableListOf(
-            Item(id = 1, name = "Arroz", amount = 2),
-            Item(id = 2, name = "Feijão", amount = 3)
-        )
-
         crud = Crud(this)
 
         val botaoAddList = findViewById<Button>(R.id.addListBtn)
@@ -55,8 +50,6 @@ class MainActivity : AppCompatActivity(), LocationListener {
             startActivity(Intent(this, NewListActivity::class.java))
         }
 
-        val listaTeste = Lista("Teste 3", items)
-//        crud.create(listaTeste)
         listsView = findViewById(R.id.listsView)
         crud.carregarListas(listsView)
 
