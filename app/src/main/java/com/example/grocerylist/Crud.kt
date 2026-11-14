@@ -5,10 +5,12 @@ import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
@@ -18,6 +20,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import com.google.firebase.database.getValue
+import androidx.appcompat.app.AlertDialog
 
 class Crud(private val context: Context) {
 
@@ -26,6 +29,7 @@ class Crud(private val context: Context) {
         .getReference("listas")
 
     private lateinit var itemView: View
+    private var listasSalvas = emptyList<ListaComID>()
 
     // Cria a lista no firebase
     fun create(lista: Lista) {
@@ -48,9 +52,13 @@ class Crud(private val context: Context) {
 //        TODO()
 //    }
 //
-//    fun delete() {
-//        TODO()
-//    }
+    fun deleteLista() {
+
+    }
+
+    fun deleteItem() {
+        TODO("Not yet implemented")
+    }
 //
 //    fun addItem() {
 //        TODO()
@@ -61,6 +69,50 @@ class Crud(private val context: Context) {
 //    }
 
     // Leitura de todas as listas
+
+    fun printListas(listsView: LinearLayout) {
+        for (item in listasSalvas){
+            itemView = LayoutInflater.from(context).inflate(
+                R.layout.activity_listasview,
+                listsView,
+                false
+            )
+
+            val nomeText = itemView.findViewById<TextView>(R.id.listaNome)
+            nomeText.text = item.lista.name
+
+            val amountText = itemView.findViewById<TextView>(R.id.qntdItem)
+            amountText.text = item.lista.items.size.toString()
+
+            val verLista = itemView.findViewById<LinearLayout>(R.id.listaClicavel)
+            verLista.setOnClickListener {
+                val intent = Intent(context, NewListActivity::class.java)
+                intent.putExtra("listaId", item.id)
+                context.startActivity(intent)
+            }
+
+            val deletarListaBtn = itemView.findViewById<ImageButton>(R.id.deleteBtn)
+            deletarListaBtn.setOnClickListener {
+                AlertDialog.Builder(context)
+                    .setTitle("Tem certeza que deseja excluir?")
+                    .setMessage("${item.lista.name} - ${item.lista.items.size} itens")
+                    .setPositiveButton("Sim") {_,_ ->
+                        dbRef.child(item.id)
+                            .removeValue()
+                            .addOnSuccessListener {
+                                Toast.makeText(context, "Lista excluída com sucesso", Toast.LENGTH_SHORT).show()
+                            }
+                            .addOnFailureListener {
+                                Toast.makeText(context, "Erro ao excluir lista", Toast.LENGTH_SHORT).show()
+                            }
+                    }
+                    .setNegativeButton("Cancelar", null)
+                    .show()
+            }
+            listsView.addView(itemView)
+        }
+    }
+
     fun carregarListas(listsView: LinearLayout) {
         dbRef.addValueEventListener(object: ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -77,38 +129,15 @@ class Crud(private val context: Context) {
                         )
                     }
                 }
-                
-                val linhas = listas.mapIndexed { index, item ->
-                    "${index} - ${item.lista.name}"
-                }
+                listasSalvas = listas
 
                 listsView.removeAllViews()
                 val texto = TextView(context)
-                if (linhas.isEmpty()){
+                if (listas.isEmpty()){
                     texto.text = "Você não possui nenhuma lista!"
                     listsView.addView(texto)
                 } else {
-                    for (item in listas){
-                        itemView = LayoutInflater.from(context).inflate(
-                            R.layout.activity_listasview,
-                            listsView,
-                            false
-                        )
-
-                        val nomeText = itemView.findViewById<TextView>(R.id.listaNome)
-                        nomeText.text = item.lista.name
-
-                        val amountText = itemView.findViewById<TextView>(R.id.qntdItem)
-                        amountText.text = item.lista.items.size.toString()
-
-                        val verLista = itemView.findViewById<LinearLayout>(R.id.listaClicavel)
-                        verLista.setOnClickListener {
-                            val intent = Intent(context, NewListActivity::class.java)
-                            intent.putExtra("listaId", item.id)
-                            context.startActivity(intent)
-                        }
-                        listsView.addView(itemView)
-                    }
+                    printListas(listsView)
                 }
             }
 
