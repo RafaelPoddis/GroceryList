@@ -28,7 +28,7 @@ class NewListActivity: AppCompatActivity() {
         .getReference("listas")
     private lateinit var crud: Crud
 
-    private var listaItens = emptyList<Item>()
+    private val listaItens = mutableListOf<Item>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -84,6 +84,7 @@ class NewListActivity: AppCompatActivity() {
 
 
         val addItemBtn = findViewById<Button>(R.id.addItemBtn)
+        val newItems = findViewById<LinearLayout>(R.id.newItems)
         addItemBtn.setOnClickListener {
             val nomeItem = EditText(this).apply {
                 hint = "Nome do item"
@@ -119,9 +120,22 @@ class NewListActivity: AppCompatActivity() {
                         nomeItem.error = "Valor inválido!"
                         Toast.makeText(this, "Valor inválido!", Toast.LENGTH_SHORT).show()
                     } else {
-                        val listaTemp = mutableListOf<Item>()
-                        listaTemp.add(Item(novoItemNome, novoAmountItem))
-                        listaItens = listaTemp
+                        listaItens.add(Item(novoItemNome, novoAmountItem))
+
+                        newItems.removeAllViews()
+                        for (item in listaItens) {
+                            val inflater = layoutInflater.inflate(
+                                R.layout.activity_listasview,
+                                newItems,
+                                false
+                            )
+                            val itemNome = inflater.findViewById<TextView>(R.id.listaNome)
+                            itemNome.text = item.name
+
+                            val qntdItem = inflater.findViewById<TextView>(R.id.qntdItem)
+                            qntdItem.text = item.amount.toString()
+                            newItems.addView(inflater)
+                        }
                     }
                 }
                 .setNegativeButton("Cancelar", null)
