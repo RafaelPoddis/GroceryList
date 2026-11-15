@@ -41,9 +41,10 @@ class NewListActivity: AppCompatActivity() {
             finish()
         }
 
-        val id = intent.getStringExtra("id") ?: ""
+        val id = intent.getStringExtra("listaId") ?: ""
         val saveBtn = findViewById<ImageButton>(R.id.saveBtn)
         val campoNome = findViewById<EditText>(R.id.nameField)
+        val newItems = findViewById<LinearLayout>(R.id.newItems)
 
         if (!id.isEmpty()){
             dbRef.addValueEventListener(object: ValueEventListener{
@@ -53,7 +54,23 @@ class NewListActivity: AppCompatActivity() {
                         val chave = item.key
                         val lista = item.getValue(Lista::class.java)
                         if (id == item.key) {
-                            campoNome.setText(item.getValue(Lista::class.java)?.name)
+                            if (lista != null){
+                                campoNome.setText(lista.name)
+                                for (product in lista.items) {
+                                    val productInflate = layoutInflater.inflate(
+                                        R.layout.activity_listasview,
+                                        newItems,
+                                        false
+                                    )
+                                    val productName = productInflate.findViewById<TextView>(R.id.listaNome)
+                                    productName.text = product.name
+
+                                    val productAmount = productInflate.findViewById<TextView>(R.id.qntdItem)
+                                    productAmount.text = product.amount.toString()
+                                    newItems.addView(productInflate)
+                                }
+                            }
+
                         }
                         if(chave != null && lista != null){
                             listas.add(
@@ -67,7 +84,6 @@ class NewListActivity: AppCompatActivity() {
                     Log.e("Abrir lista especifica", "Nao deu pra abrir essa lista")
                     Toast.makeText(this@NewListActivity, "Erro ao carregar a lista!", Toast.LENGTH_SHORT).show()
                 }
-
             })
         }
 
@@ -84,7 +100,6 @@ class NewListActivity: AppCompatActivity() {
 
 
         val addItemBtn = findViewById<Button>(R.id.addItemBtn)
-        val newItems = findViewById<LinearLayout>(R.id.newItems)
         addItemBtn.setOnClickListener {
             val nomeItem = EditText(this).apply {
                 hint = "Nome do item"
