@@ -15,11 +15,18 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.gestures.snapping.SnapPosition
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 class NewListActivity: AppCompatActivity() {
 
@@ -40,11 +47,45 @@ class NewListActivity: AppCompatActivity() {
         backBtn.setOnClickListener {
             finish()
         }
+        val newItems = findViewById<LinearLayout>(R.id.newItems)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                while (isActive) {
+                    newItems.removeAllViews()
+                    for (item in listaItens) {
+                        val inflater = layoutInflater.inflate(
+                            R.layout.activity_listasview,
+                            newItems,
+                            false
+                        )
+                        val itemNome = inflater.findViewById<TextView>(R.id.listaNome)
+                        itemNome.text = item.name
+
+                        val qntdItem = inflater.findViewById<TextView>(R.id.qntdItem)
+                        qntdItem.text = item.amount.toString()
+                        newItems.addView(inflater)
+
+                        val deleteItemBtn = inflater.findViewById<ImageButton>(R.id.deleteBtn)
+                        deleteItemBtn.setOnClickListener {
+                            AlertDialog.Builder(this@NewListActivity)
+                                .setTitle("Tem certeza que deseja excluir?")
+                                .setMessage("Item: ${itemNome.text}\nQuantidade: ${qntdItem.text}")
+                                .setPositiveButton("Sim") {_,_ ->
+                                    listaItens.remove(Item(itemNome.text.toString(), qntdItem.text.toString().toInt()))
+                                }
+                                .setNegativeButton("Não", null)
+                                .show()
+                        }
+                    }
+                    delay(1000L.milliseconds)
+                }
+            }
+        }
 
         val id = intent.getStringExtra("listaId") ?: ""
         val saveBtn = findViewById<ImageButton>(R.id.saveBtn)
         val campoNome = findViewById<EditText>(R.id.nameField)
-        val newItems = findViewById<LinearLayout>(R.id.newItems)
+
 
         if (!id.isEmpty()){
             dbRef.addValueEventListener(object: ValueEventListener{
@@ -136,21 +177,6 @@ class NewListActivity: AppCompatActivity() {
                         Toast.makeText(this, "Valor inválido!", Toast.LENGTH_SHORT).show()
                     } else {
                         listaItens.add(Item(novoItemNome, novoAmountItem))
-
-                        newItems.removeAllViews()
-                        for (item in listaItens) {
-                            val inflater = layoutInflater.inflate(
-                                R.layout.activity_listasview,
-                                newItems,
-                                false
-                            )
-                            val itemNome = inflater.findViewById<TextView>(R.id.listaNome)
-                            itemNome.text = item.name
-
-                            val qntdItem = inflater.findViewById<TextView>(R.id.qntdItem)
-                            qntdItem.text = item.amount.toString()
-                            newItems.addView(inflater)
-                        }
                     }
                 }
                 .setNegativeButton("Cancelar", null)
