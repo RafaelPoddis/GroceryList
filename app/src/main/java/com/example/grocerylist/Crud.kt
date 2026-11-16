@@ -30,6 +30,7 @@ class Crud(private val context: Context) {
 
     private lateinit var itemView: View
     private var listasSalvas = emptyList<ListaComID>()
+    private var itensSalvos = emptyList< ItensComId>()
 
     // Cria a lista no firebase
     fun create(lista: Lista) {
@@ -56,8 +57,32 @@ class Crud(private val context: Context) {
 
     }
 
-    fun deleteItem() {
-        TODO("Not yet implemented")
+    fun deleteItem(listaId: String, itemId: String) {
+        val itemsRef = dbRef.child("${listaId}/items")
+        itemsRef.addListenerForSingleValueEvent(object: ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (items in snapshot.children) {
+                    if (items.key == itemId) {
+                        itemsRef.child("itemId")
+                            .removeValue()
+                            .addOnSuccessListener {
+                                Toast.makeText(context, "Item excluido com sucesso!", Toast.LENGTH_SHORT).show()
+                            }
+                            .addOnFailureListener {
+                                Log.e("Firebase", "Excluir item firebase")
+                                Toast.makeText(context, "Erro ao excluir item!", Toast.LENGTH_SHORT).show()
+                            }
+                    } else {
+                        Log.e("Firebase", "Nao achou")
+                        Toast.makeText(context, "Erro ao excluir item!", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(context, "Erro no banco de dados!", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 //
 //    fun addItem() {
