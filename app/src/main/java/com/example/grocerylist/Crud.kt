@@ -33,14 +33,29 @@ class Crud(private val context: Context) {
     private var itensSalvos = emptyList< ItensComId>()
 
     // Cria a lista no firebase
-    fun create(lista: Lista) {
-        dbRef.push()
-            .setValue(lista)
+    fun create(lista: Lista): String {
+        val key = dbRef.push()
+
+        key.setValue(lista)
             .addOnSuccessListener {
                 Toast.makeText(context, "Lista criada com sucesso!", Toast.LENGTH_SHORT).show()
             }
             .addOnFailureListener {
                 Log.e("Firebase", "Deu um erro aí!")
+            }
+
+        return key.key!!
+    }
+
+    fun createItem(item: Item, listaKey: String) {
+        dbRef.child("${listaKey}/items")
+            .push()
+            .setValue(item)
+            .addOnSuccessListener {
+                Toast.makeText(context, "Item criado!", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener {
+                Log.e("Firebase", "Deu ruim no item")
             }
     }
 

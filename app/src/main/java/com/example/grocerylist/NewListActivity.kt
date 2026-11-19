@@ -4,7 +4,9 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.PersistableBundle
 import android.util.Log
+import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
@@ -36,6 +38,8 @@ class NewListActivity: AppCompatActivity() {
         .getInstance()
         .getReference("listas")
     private lateinit var crud: Crud
+    private lateinit var listaKey: String
+    private lateinit var itemInflate: View
 
     private val listaItens = mutableListOf<Item>()
 
@@ -50,124 +54,133 @@ class NewListActivity: AppCompatActivity() {
             finish()
         }
 
-        val id = intent.getStringExtra("listaId") ?: ""
-        val saveBtn = findViewById<ImageButton>(R.id.saveBtn)
+        listaKey = intent.getStringExtra("listaId") ?: ""
+        val criarListaBtn = findViewById<Button>(R.id.createList)
         val campoNome = findViewById<EditText>(R.id.nameField)
-        val newItems = findViewById<LinearLayout>(R.id.newItems)
         val addItemBtn = findViewById<Button>(R.id.addItemBtn)
+        val linearContainer = findViewById<LinearLayout>(R.id.newItems)
 
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                while (isActive) {
-                    newItems.removeAllViews()
-                    if(id.isEmpty()){
-                        addItemBtn.setOnClickListener {
-                            val nomeItem = EditText(this@NewListActivity).apply {
-                                hint = "Nome do item"
-                                inputType = android.text.InputType.TYPE_CLASS_TEXT
-                            }
+        if (!listaKey.isEmpty()){
+            criarListaBtn.visibility = View.GONE
+            addItemBtn.visibility = View.VISIBLE
+            dbRef.addValueEventListener(object: ValueEventListener{
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (lista in snapshot.children) {
+                        val chave = lista.key
+                        val valor = lista.getValue(Lista::class.java)
 
-                            val amountItem = EditText(this@NewListActivity).apply {
-                                hint = "Quantidade"
-                                inputType = android.text.InputType.TYPE_CLASS_NUMBER
-                            }
-
-                            val linear = LinearLayout(this@NewListActivity).apply {
-                                orientation = LinearLayout.HORIZONTAL
-
-                                setPadding(10,20,10,20)
-
-                                addView(nomeItem)
-                                addView(amountItem)
-                            }
-
-                            AlertDialog.Builder(this@NewListActivity)
-                                .setTitle("Adicionar Item")
-                                .setMessage("Novo item:")
-                                .setView(linear)
-                                .setPositiveButton("Salvar") {_,_ ->
-                                    val novoItemNome = nomeItem.text.toString()
-                                    val novoAmountItem = amountItem.text.toString().toIntOrNull()
-
-                                    if (novoAmountItem == null || novoAmountItem < 0){
-                                        amountItem.error = "Valor inválido!"
-                                        Toast.makeText(this@NewListActivity,
-                                            "Valor inválido!",
-                                            Toast.LENGTH_SHORT).show()
-                                    } else if (novoItemNome.isEmpty()) {
-                                        nomeItem.error = "Valor inválido!"
-                                        Toast.makeText(this@NewListActivity,
-                                            "Valor inválido!",
-                                            Toast.LENGTH_SHORT).show()
-                                    } else {
-                                        listaItens.add(Item(novoItemNome, novoAmountItem))
-                                    }
-                                }
-                                .setNegativeButton("Cancelar", null)
-                                .show()
+                        if(chave == listaKey) {
+                            campoNome.hint = valor?.name
                         }
-                        printItems(listaItens, newItems)
-                    } else {
-                        dbRef.addValueEventListener(object: ValueEventListener{
-                            override fun onDataChange(snapshot: DataSnapshot) {
-                                val listas = mutableListOf<ListaComID>()
-                                for (item in snapshot.children) {
-                                    val chave = item.key
-                                    val lista = item.getValue(Lista::class.java)
-                                    if (id == item.key) {
-                                        if (lista != null){
-                                            campoNome.setText(lista.name)
-                                            for (product in lista.items) {
-                                                val productInflate = layoutInflater.inflate(
-                                                    R.layout.activity_listasview,
-                                                    newItems,
-                                                    false
-                                                )
-                                                val productName = productInflate.findViewById<TextView>(R.id.listaNome)
-                                                productName.text = product.name
-
-                                                val productAmount = productInflate.findViewById<TextView>(R.id.qntdItem)
-                                                productAmount.text = product.amount.toString()
-                                                newItems.addView(productInflate)
-                                                listaItens.add(Item(
-                                                    productName.text.toString(),
-                                                    productAmount.text.toString().toInt()))
-                                                printItems(listaItens, newItems)
-                                            }
-                                        }
-
-                                    }
-                                    if(chave != null && lista != null){
-                                        listas.add(
-                                            ListaComID(chave, lista)
-                                        )
-                                    }
-                                }
-                            }
-
-                            override fun onCancelled(error: DatabaseError) {
-
-                                Log.e("Abrir lista especifica", "Nao deu pra abrir essa lista")
-                                Toast.makeText(this@NewListActivity, "Erro ao carregar a lista!", Toast.LENGTH_SHORT).show()
-                            }
-                        })
                     }
-                    delay(1000L.milliseconds)
                 }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(this@NewListActivity,
+                        "Erro ao carregar dados da lista!",
+                        Toast.LENGTH_SHORT).show()
+                }
+            })
+        }
+        criarListaBtn.setOnClickListener {
+            val nome = campoNome.text.toString().trim()
+            if (nome.isEmpty()) {
+                campoNome.error = "Coloque um nome na lista!"
+            } else {
+                listaKey = crud.create(Lista(nome))
+
+                criarListaBtn.visibility = View.GONE
+                addItemBtn.visibility = View.VISIBLE
             }
         }
 
-        saveBtn.setOnClickListener {
-            if (id.isEmpty()){
-                val nome = campoNome.text.toString().trim()
-                if (nome.isEmpty()){
-                    campoNome.error = "Coloque um nome na lista!"
-                } else {
-                    crud.create(Lista(nome, listaItens))
-                }
+
+        addItemBtn.setOnClickListener {
+            val nomeItem = EditText(this@NewListActivity).apply {
+                hint = "Nome do item"
+                inputType = android.text.InputType.TYPE_CLASS_TEXT
             }
+
+            val amountItem = EditText(this@NewListActivity).apply {
+                hint = "Quantidade"
+                inputType = android.text.InputType.TYPE_CLASS_NUMBER
+            }
+
+            val linear = LinearLayout(this@NewListActivity).apply {
+                orientation = LinearLayout.HORIZONTAL
+                setVerticalGravity(Gravity.CENTER)
+                setHorizontalGravity(Gravity.CENTER)
+                addView(nomeItem)
+                addView(amountItem)
+            }
+
+            AlertDialog.Builder(this@NewListActivity)
+                .setTitle("Adicionar Item")
+                .setMessage("Novo item:")
+                .setView(linear)
+                .setPositiveButton("Salvar") { _, _ ->
+                    val novoItemNome = nomeItem.text.toString()
+                    val novoAmountItem = amountItem.text.toString().toIntOrNull()
+
+                    if (novoAmountItem == null || novoAmountItem < 0) {
+                        amountItem.error = "Valor inválido!"
+                        Toast.makeText(
+                            this@NewListActivity,
+                            "Valor inválido!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else if (novoItemNome.isEmpty()) {
+                        nomeItem.error = "Valor inválido!"
+                        Toast.makeText(
+                            this@NewListActivity,
+                            "Valor inválido!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        crud.createItem(Item(novoItemNome, novoAmountItem), listaKey)
+                    }
+                }
+                .setNegativeButton("Cancelar", null)
+                .show()
         }
+        dbRef.child("${listaKey}/items")
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val itemsList = mutableListOf<ItensComId>()
+
+                    for (item in snapshot.children) {
+                        val itemKey = item.key
+                        val itemInfo = item.getValue(Item::class.java)
+
+                        if (itemKey != null && itemInfo != null) {
+                            itemInflate = layoutInflater.inflate(
+                                R.layout.activity_listasview,
+                                linearContainer,
+                                false
+                            )
+                            val productName =
+                                itemInflate.findViewById<TextView>(R.id.listaNome)
+                            productName.text = itemInfo.name
+
+                            val productAmount =
+                                itemInflate.findViewById<TextView>(R.id.qntdItem)
+                            productAmount.text = itemInfo.amount.toString()
+                            linearContainer.addView(itemInflate)
+                        }
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(
+                        this@NewListActivity,
+                        "Nao deu pra mostrar os itens!",
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
+                }
+            })
     }
+
     private fun printItems(listaItens: MutableList<Item>, newItems: LinearLayout) {
 
         for (item in listaItens) {
