@@ -41,7 +41,7 @@ class NewListActivity: AppCompatActivity() {
     private lateinit var listaKey: String
     private lateinit var itemInflate: View
 
-    private val listaItens = mutableListOf<Item>()
+    private val listaItens = mutableListOf<ItensComId>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,28 +60,6 @@ class NewListActivity: AppCompatActivity() {
         val addItemBtn = findViewById<Button>(R.id.addItemBtn)
         val linearContainer = findViewById<LinearLayout>(R.id.newItems)
 
-        if (!listaKey.isEmpty()){
-            criarListaBtn.visibility = View.GONE
-            addItemBtn.visibility = View.VISIBLE
-            dbRef.addValueEventListener(object: ValueEventListener{
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    for (lista in snapshot.children) {
-                        val chave = lista.key
-                        val valor = lista.getValue(Lista::class.java)
-
-                        if(chave == listaKey) {
-                            campoNome.hint = valor?.name
-                        }
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@NewListActivity,
-                        "Erro ao carregar dados da lista!",
-                        Toast.LENGTH_SHORT).show()
-                }
-            })
-        }
         criarListaBtn.setOnClickListener {
             val nome = campoNome.text.toString().trim()
             if (nome.isEmpty()) {
@@ -94,6 +72,49 @@ class NewListActivity: AppCompatActivity() {
             }
         }
 
+        dbRef.addValueEventListener(object: ValueEventListener{
+
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (lista in snapshot.children) {
+                    val chave = lista.key
+                    val valor = lista.getValue(Lista::class.java)
+
+                    if (chave != null && valor != null){
+                        if (chave == listaKey){
+                            campoNome.hint = valor.name
+                            for (itens in valor.items) {
+                                val itemId = itens.key
+                                val itemValor = itens.value
+
+                                itemInflate = layoutInflater.inflate(
+                                    R.layout.activity_listasview,
+                                    linearContainer,
+                                    false
+                                )
+                                val productName =
+                                    itemInflate.findViewById<TextView>(R.id.listaNome)
+                                productName.text = itemValor.name
+
+                                val productAmount =
+                                    itemInflate.findViewById<TextView>(R.id.qntdItem)
+                                productAmount.text = itemValor.amount.toString()
+                                linearContainer.addView(itemInflate)
+                            }
+                        }
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@NewListActivity,
+                    "Erro ao carregar dados da lista!",
+                    Toast.LENGTH_SHORT).show()
+            }
+        })
+        if (!listaKey.isEmpty()){
+            criarListaBtn.visibility = View.GONE
+            addItemBtn.visibility = View.VISIBLE
+        }
 
         addItemBtn.setOnClickListener {
             val nomeItem = EditText(this@NewListActivity).apply {
@@ -143,42 +164,42 @@ class NewListActivity: AppCompatActivity() {
                 .setNegativeButton("Cancelar", null)
                 .show()
         }
-        dbRef.child("${listaKey}/items")
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val itemsList = mutableListOf<ItensComId>()
-
-                    for (item in snapshot.children) {
-                        val itemKey = item.key
-                        val itemInfo = item.getValue(Item::class.java)
-
-                        if (itemKey != null && itemInfo != null) {
-                            itemInflate = layoutInflater.inflate(
-                                R.layout.activity_listasview,
-                                linearContainer,
-                                false
-                            )
-                            val productName =
-                                itemInflate.findViewById<TextView>(R.id.listaNome)
-                            productName.text = itemInfo.name
-
-                            val productAmount =
-                                itemInflate.findViewById<TextView>(R.id.qntdItem)
-                            productAmount.text = itemInfo.amount.toString()
-                            linearContainer.addView(itemInflate)
-                        }
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(
-                        this@NewListActivity,
-                        "Nao deu pra mostrar os itens!",
-                        Toast.LENGTH_SHORT
-                    )
-                        .show()
-                }
-            })
+//        dbRef.child("${listaKey}/items")
+//            .addValueEventListener(object : ValueEventListener {
+//                override fun onDataChange(snapshot: DataSnapshot) {
+//                    val itemsList = mutableListOf<ItensComId>()
+//
+//                    for (item in snapshot.children) {
+//                        val itemKey = item.key
+//                        val itemInfo = item.getValue(Item::class.java)
+//
+//                        if (itemKey != null && itemInfo != null) {
+//                            itemInflate = layoutInflater.inflate(
+//                                R.layout.activity_listasview,
+//                                linearContainer,
+//                                false
+//                            )
+//                            val productName =
+//                                itemInflate.findViewById<TextView>(R.id.listaNome)
+//                            productName.text = itemInfo.name
+//
+//                            val productAmount =
+//                                itemInflate.findViewById<TextView>(R.id.qntdItem)
+//                            productAmount.text = itemInfo.amount.toString()
+//                            linearContainer.addView(itemInflate)
+//                        }
+//                    }
+//                }
+//
+//                override fun onCancelled(error: DatabaseError) {
+//                    Toast.makeText(
+//                        this@NewListActivity,
+//                        "Nao deu pra mostrar os itens!",
+//                        Toast.LENGTH_SHORT
+//                    )
+//                        .show()
+//                }
+//            })
     }
 
     private fun printItems(listaItens: MutableList<Item>, newItems: LinearLayout) {
