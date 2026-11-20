@@ -137,6 +137,24 @@ class NewListActivity: AppCompatActivity() {
                                     productAmount.text = itemInfo.amount.toString()
                                     linearContainer.addView(itemInflate)
 
+                                    val editarItem = itemInflate.findViewById<LinearLayout>(R.id.listaClicavel)
+                                    editarItem.setOnClickListener {
+                                        val amountItem = EditText(this@NewListActivity).apply {
+                                            hint = itemInfo.amount.toString()
+                                            inputType = android.text.InputType.TYPE_CLASS_NUMBER
+                                        }
+
+                                        AlertDialog.Builder(this@NewListActivity)
+                                            .setTitle("Editar Item")
+                                            .setMessage("Nova quantidade de ${itemInfo.name}")
+                                            .setView(amountItem)
+                                            .setPositiveButton("Editar") {_,_ ->
+                                                crud.updateItem(listaKey, itemKey, amountItem.text.toString().toInt())
+                                            }
+                                            .setNegativeButton("Cancelar", null)
+                                            .show()
+                                    }
+
                                     val deleteItemBtn = itemInflate.findViewById<ImageButton>(R.id.deleteBtn)
                                     deleteItemBtn.setOnClickListener {
                                         AlertDialog.Builder(this@NewListActivity)

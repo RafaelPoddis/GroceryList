@@ -52,6 +52,18 @@ class Crud(private val context: Context) {
                 Log.e("Firebase", "Deu ruim no item")
             }
     }
+
+    fun updateItem(listaId: String, itemId: String, novoValor: Int){
+        dbRef.child("${listaId}/items/${itemId}/amount")
+            .setValue(novoValor)
+            .addOnSuccessListener {
+                Toast.makeText(context, "Valor editado!", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener {
+                Toast.makeText(context, "Erro ao editar o item!", Toast.LENGTH_SHORT).show()
+            }
+    }
+
     fun deleteItem(listaId: String, itemId: String) {
         val itemsRef = dbRef.child("${listaId}/items/${itemId}")
         itemsRef.removeValue()
