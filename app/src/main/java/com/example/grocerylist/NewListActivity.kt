@@ -1,36 +1,21 @@
 package com.example.grocerylist
 
 import android.os.Bundle
-import android.os.Environment
-import android.os.PersistableBundle
-import android.util.Log
 import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
-import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.gestures.snapping.SnapPosition
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import java.io.File
-import kotlin.time.Duration.Companion.milliseconds
 
 class NewListActivity: AppCompatActivity() {
 
@@ -67,13 +52,12 @@ class NewListActivity: AppCompatActivity() {
             if (nome.isEmpty()) {
                 campoNome.error = "Coloque um nome na lista!"
             } else {
-                listaKey = crud.create(Lista(nome))
+                listaKey = crud.createLista(Lista(nome))
 
                 criarListaBtn.visibility = View.GONE
                 addItemBtn.visibility = View.VISIBLE
             }
         }
-
 
         addItemBtn.setOnClickListener {
             val nomeItem = EditText(this@NewListActivity).apply {
@@ -113,7 +97,7 @@ class NewListActivity: AppCompatActivity() {
                         nomeItem.error = "Valor inválido!"
                         Toast.makeText(
                             this@NewListActivity,
-                            "Valor inválido!",
+                            "Nome inválido!",
                             Toast.LENGTH_SHORT
                         ).show()
                     } else {
@@ -152,6 +136,18 @@ class NewListActivity: AppCompatActivity() {
                                         itemInflate.findViewById<TextView>(R.id.qntdItem)
                                     productAmount.text = itemInfo.amount.toString()
                                     linearContainer.addView(itemInflate)
+
+                                    val deleteItemBtn = itemInflate.findViewById<ImageButton>(R.id.deleteBtn)
+                                    deleteItemBtn.setOnClickListener {
+                                        AlertDialog.Builder(this@NewListActivity)
+                                            .setTitle("Tem certeza que deseja excluir?")
+                                            .setMessage("${itemInfo.name} - ${itemInfo.amount}")
+                                            .setPositiveButton("Sim") {_,_ ->
+                                                crud.deleteItem(listaKey, itemKey)
+                                            }
+                                            .setNegativeButton("Não", null)
+                                            .show()
+                                    }
                                 }
                             }
                         }
