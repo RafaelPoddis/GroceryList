@@ -1,31 +1,17 @@
 package com.example.grocerylist
 
-//import android.hardware.Sensor
-//import android.hardware.SensorEvent
-//import android.hardware.SensorEventListener
-//import android.hardware.SensorManager
 import android.content.Intent
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Button
-import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.Firebase
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.database
-import com.google.firebase.database.getValue
-import org.w3c.dom.Text
-import java.io.File
 
 class MainActivity : AppCompatActivity(), LocationListener {
 
