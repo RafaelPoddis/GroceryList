@@ -149,7 +149,13 @@ class NewListActivity: AppCompatActivity() {
                                             .setMessage("Nova quantidade de ${itemInfo.name}")
                                             .setView(amountItem)
                                             .setPositiveButton("Editar") {_,_ ->
-                                                crud.updateItem(listaKey, itemKey, amountItem.text.toString().toInt())
+                                                val novoValor = amountItem.text.toString().toIntOrNull()
+                                                if (novoValor == null || novoValor < 0){
+                                                    Toast.makeText(this@NewListActivity, "Valor inválido",
+                                                        Toast.LENGTH_SHORT).show()
+                                                } else {
+                                                    crud.updateItem(listaKey, itemKey, novoValor)
+                                                }
                                             }
                                             .setNegativeButton("Cancelar", null)
                                             .show()
