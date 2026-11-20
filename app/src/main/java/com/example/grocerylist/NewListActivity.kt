@@ -41,8 +41,6 @@ class NewListActivity: AppCompatActivity() {
     private lateinit var listaKey: String
     private lateinit var itemInflate: View
 
-    private val listaItens = mutableListOf<Item>()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_newlist)
@@ -63,24 +61,6 @@ class NewListActivity: AppCompatActivity() {
         if (!listaKey.isEmpty()){
             criarListaBtn.visibility = View.GONE
             addItemBtn.visibility = View.VISIBLE
-            dbRef.addValueEventListener(object: ValueEventListener{
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    for (lista in snapshot.children) {
-                        val chave = lista.key
-                        val valor = lista.getValue(Lista::class.java)
-
-                        if(chave == listaKey) {
-                            campoNome.hint = valor?.name
-                        }
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@NewListActivity,
-                        "Erro ao carregar dados da lista!",
-                        Toast.LENGTH_SHORT).show()
-                }
-            })
         }
         criarListaBtn.setOnClickListener {
             val nome = campoNome.text.toString().trim()
@@ -143,29 +123,37 @@ class NewListActivity: AppCompatActivity() {
                 .setNegativeButton("Cancelar", null)
                 .show()
         }
-        dbRef.child("${listaKey}/items")
-            .addValueEventListener(object : ValueEventListener {
+        dbRef.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    val itemsList = mutableListOf<ItensComId>()
+                    linearContainer.removeAllViews()
 
-                    for (item in snapshot.children) {
-                        val itemKey = item.key
-                        val itemInfo = item.getValue(Item::class.java)
+                    for (lista in snapshot.children) {
+                        val listaChave = lista.key
+                        val listaInfo = lista.getValue(Lista::class.java)
 
-                        if (itemKey != null && itemInfo != null) {
-                            itemInflate = layoutInflater.inflate(
-                                R.layout.activity_listasview,
-                                linearContainer,
-                                false
-                            )
-                            val productName =
-                                itemInflate.findViewById<TextView>(R.id.listaNome)
-                            productName.text = itemInfo.name
+                        if (listaChave != null && listaInfo != null) {
+                            if(!listaKey.isEmpty() && listaKey == listaChave) {
+                                campoNome.hint = listaInfo.name
 
-                            val productAmount =
-                                itemInflate.findViewById<TextView>(R.id.qntdItem)
-                            productAmount.text = itemInfo.amount.toString()
-                            linearContainer.addView(itemInflate)
+                                for (item in listaInfo.items) {
+                                    val itemKey = item.key
+                                    val itemInfo = item.value
+
+                                    itemInflate = layoutInflater.inflate(
+                                        R.layout.activity_listasview,
+                                        linearContainer,
+                                        false
+                                    )
+                                    val productName =
+                                        itemInflate.findViewById<TextView>(R.id.listaNome)
+                                    productName.text = itemInfo.name
+
+                                    val productAmount =
+                                        itemInflate.findViewById<TextView>(R.id.qntdItem)
+                                    productAmount.text = itemInfo.amount.toString()
+                                    linearContainer.addView(itemInflate)
+                                }
+                            }
                         }
                     }
                 }
@@ -179,34 +167,5 @@ class NewListActivity: AppCompatActivity() {
                         .show()
                 }
             })
-    }
-
-    private fun printItems(listaItens: MutableList<Item>, newItems: LinearLayout) {
-
-        for (item in listaItens) {
-            val inflater = layoutInflater.inflate(
-                R.layout.activity_listasview,
-                newItems,
-                false
-            )
-            val itemNome = inflater.findViewById<TextView>(R.id.listaNome)
-            itemNome.text = item.name
-
-            val qntdItem = inflater.findViewById<TextView>(R.id.qntdItem)
-            qntdItem.text = item.amount.toString()
-            newItems.addView(inflater)
-
-            val deleteItemBtn = inflater.findViewById<ImageButton>(R.id.deleteBtn)
-            deleteItemBtn.setOnClickListener {
-                AlertDialog.Builder(this@NewListActivity)
-                    .setTitle("Tem certeza que deseja excluir?")
-                    .setMessage("Item: ${itemNome.text}\nQuantidade: ${qntdItem.text}")
-                    .setPositiveButton("Sim") {_,_ ->
-                        listaItens.remove(Item(itemNome.text.toString(), qntdItem.text.toString().toInt()))
-                    }
-                    .setNegativeButton("Não", null)
-                    .show()
-            }
-        }
     }
 }
